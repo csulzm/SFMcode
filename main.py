@@ -18,6 +18,7 @@ def mergeAllGraph(gL,imsize):
     # merge de vistas parciales
     for i in range(len(gL) - 1):
         graphMerged = updateMerged(graphMerged, gL[i+1],imageSize)
+        
     return graphMerged
     
 def updateMerged(gA,gB,imsize):
@@ -25,14 +26,14 @@ def updateMerged(gA,gB,imsize):
     gt = triangulateGraph(gt, imsize)
     gt = bundleAdjustment(gt, False)
     gt = removeOutlierPts(gt, 10)
-    gt = bundleAdjustment(gt)
+    #gt = bundleAdjustment(gt)
     return gt
 
 if __name__ == "__main__":
 
     #---------------------------SET PARAMETERS
     maxSize = 640 #maxima resolucion de imagen
-    carpetaImagenes = 'example_cjl/'
+    carpetaImagenes = 'example_cyys/'
     debug = False
     outName = "jirafa.ply" #out name for ply file (open with mesh lab to see poitn cloud)
     validFile = ['jpg','png','JPG'] #tipos validos de imagenes
@@ -49,8 +50,7 @@ if __name__ == "__main__":
 
     #Load Images
     listaArchivos = os.listdir(carpetaImagenes)
-    
-    #listaArchivos.sort()
+    listaArchivos.sort()
     print(listaArchivos)
     
     listaImages = filter(lambda x : x.split('.')[-1] in validFile,listaArchivos )
@@ -125,11 +125,12 @@ if __name__ == "__main__":
         #showGraph(graphList[i],imageSize)
 
         #Bundle ajustement
-        graphList[i]=bundleAdjustment(graphList[i])
+        #graphList[i]=bundleAdjustment(graphList[i])
 
         #Visual enhancement
         print("after BA")
-        showGraph(graphList[i], imageSize)
+        #showGraph(graphList[i], imageSize)
+
 
     gM = mergeAllGraph(graphList,imageSize)
     print ('Figure merge complete')

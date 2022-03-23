@@ -1,56 +1,52 @@
+from turtle import shape
 import numpy as np
 from scipy.optimize import least_squares
 
 def bundleAdjustment(graph, adjustFocalLength=False):
 
-    nCamaras = graph.mot.shape[2]
+    nCamaras = graph.mot.shape[2] # 2
+    
     mot = np.zeros((3,2,nCamaras))
-
     for i in range(nCamaras):
         mot[:,0,i] = rotationMatrix2angleaxis(graph.mot[:,0:3,i]) # graph.mot[:,0:3,i] is only for R without T
         mot[:,1,i] = graph.mot[:,3,i]
 
     stre = graph.str
-
-    #Se asume px,py = 0
-
+    #Suppose px, py = 0
     px,py =0,0
     f = graph.f
 
     # t = packmotst(mot,stre)
     # unpackMotStr(t, nCamaras)
 
-    res = reprojectionResidual(graph.ObsIdx,graph.obsVal,px,py,f,mot,stre)
-
-    error = lambda x : 2* np.sqrt( np.sum(np.power(x,2)) / x.shape[0] )
-
-
-    print ('Initial error',error(res))
-    #Executive value optimization
+    res = reprojectionResidual(graph.ObsIdx, graph.obsVal, px, py, f, mot, stre)
+    error = lambda x : 2*np.sqrt(np.sum(np.power(x,2))/ x.shape[0])
+    print ('Initial error',error(res)) #The average error is calculated here
     
-    #Minimizing the residual norm of vector re projection
-    fun = lambda x : wrapperFuntionStrMot(x,nCamaras,graph.ObsIdx,graph.obsVal,px,py,f)
-    sol = least_squares(fun, packmotst(mot,stre), method='lm',max_nfev=1000)
-    resultM, resultS = unpackMotStr(sol.x,nCamaras,graph.ObsIdx.shape[0])
-    print ('Error despues de optimizar de ', error(sol.fun))
+    #Executive value optimization
+    #Minimizing the residual norm of vector reprojection
+    fun = lambda x : wrapperFuntionStrMot(x, nCamaras, graph.ObsIdx,graph.obsVal,px,py,f)
+    sol = least_squares(fun, packmotst(mot,stre), method='lm', max_nfev=1000)
+    resultM, resultS = unpackMotStr(sol.x, nCamaras, graph.ObsIdx.shape[0])
+    print ('Optimized error', error(sol.fun))
 
     if adjustFocalLength:
-        # Realizar optimizacion de valores
-        # Quiero conseguir minimizar la norma del vector reprojectionResidual
+        # Executive value optimization
+        # Minimizing the residual norm of vector re projection
         fun = lambda x: wrapperFuntionStrMotF(x, nCamaras, graph.ObsIdx, graph.obsVal, px, py)
         sol = least_squares(fun, packMSF(mot, stre,f), method='lm')
+        
         resultM, resultS,resultF = unpackMotStrf(sol.x, nCamaras)
-        print ('Error despues de optimizar de ', error(sol.fun))
+        print ('Optimized error ', error(sol.fun))
         graph.focal = np.eye(3) * resultF
         graph.f = resultF
 
+
     for i in range(nCamaras):
-        graph.mot[:,:, i] = np.hstack([AngleAxis2RotationMatrix(resultM[:, 0, i]) , resultM[:,1,i].reshape((3,1))])
+        graph.mot[:,:, i] = np.hstack([AngleAxis2RotationMatrix(resultM[:, 0, i]) , resultM[:, 1, i].reshape((3,1))])
     graph.str = resultS
     
     return graph
-
-
 
 
 
@@ -62,7 +58,7 @@ def packmotst(mot,st):
     return np.concatenate((mot.flatten(order='F'), st.flatten(order='F')))
 
 def wrapperFuntionStrMot(x,ncam,ObsIdx,ObsVal,px,py,f):
-    mot, st = unpackMotStr(x,ncam,ObsIdx.shape[0])
+    mot, st = unpackMotStr(x,ncam, ObsIdx.shape[0])
     return reprojectionResidual(ObsIdx, ObsVal, px, py, f, mot,st)
 
 def wrapperFuntionStrMotF(x,ncam,ObsIdx,ObsVal,px,py):
@@ -113,8 +109,8 @@ def rotationMatrix2angleaxis(R):
 # Y 3 optimizar daod [f; Mot(:); Str(:)] Por eso existen estas funciones unpack
 def unpackMotStr(vect,ncam,n):
     cut = 3 * 2 * ncam
-    mot = np.reshape(vect[0:cut], (3, 2,ncam),order='F')
-    st = np.reshape(vect[cut:], (n,3),order='F' )
+    mot = np.reshape(vect[0:cut], (3, 2,ncam), order='F')
+    st = np.reshape(vect[cut:], (n,3), order='F' )
     return mot,st
 
 def unpackMotStrf(vect,ncam,n):
@@ -125,9 +121,10 @@ def unpackMotStrf(vect,ncam,n):
     return f,mot,st
 
 def reprojectionResidual(ObsIdx,ObsVal,px,py,f,Mot,Str):
+    
     nCam = len(ObsIdx[0])
-
     residuals = np.zeros((0,0))
+    
     for i in range(nCam):
 
         validsPts = ObsIdx[:,i] != -1
@@ -148,16 +145,18 @@ def reprojectionResidual(ObsIdx,ObsVal,px,py,f,Mot,Str):
         x = f * TRXoZ + px
         y = f * TRYoZ + py
 
-        ox = ObsVal[ valIndexs.astype('int'),0]
+        ox = ObsVal[valIndexs.astype('int'),0]
         oy = ObsVal[valIndexs.astype('int'),1]
 
         step = np.vstack([(x-ox),(y-oy)])
 
-        if i ==0:
+        if i == 0:
             residuals = step
         else:
             residuals = np.hstack([residuals, step])
-    return residuals.flatten()
+        
+            
+    return residuals.flatten() # Reduce dimension
 
 def AngleAxisRotatePts(validMot, validStr):
     validStr=np.transpose(validStr)
@@ -182,6 +181,9 @@ def AngleAxisRotatePts(validMot, validStr):
     else:
         w_cross_pt = np.dot(xprodmat(angle_axis),validStr)
         result = validStr + w_cross_pt
+        
+    #return shape is [3,429]
+        
     return np.transpose(result)
 
 def xprodmat(a):

@@ -52,7 +52,7 @@ class tempGraph:
 def createGraph(id1,id2,focal,pA,pB,Rt,f):
     graph = tempGraph()
     graph.frames = [id1,id2] 
-    graph.focal = focal
+    graph.focal = focal 
     graph.f = f
     graph.mot = np.zeros((3,4,2))
     n = pA.shape[0]
@@ -61,9 +61,9 @@ def createGraph(id1,id2,focal,pA,pB,Rt,f):
     graph.mot[:,:,1] = Rt # Rt is a 3x4 matrix
     
     graph.str = np.zeros((n,3))
-    graph.matches = np.hstack([pA,pB])
-    graph.obsVal = np.vstack([pA,pB])
-
+    graph.matches = np.hstack([pA,pB]) # matches is a (nx4)matrix, len is 64 
+    graph.obsVal = np.vstack([pA,pB]) # obsVal is a (nx2) matrix, len is 128
+    
     graph.ObsIdx = np.zeros((n,2))
     graph.ObsIdx[:,0] = range(n)
     graph.ObsIdx[:,1] = range(n,2*n)
@@ -91,7 +91,7 @@ def triangulateGraph(graph,imagesize):
             x[cnt,:] = newGraph.obsVal[int(newGraph.ObsIdx[int(i)][int(ind)]), :]
             P[:,:,cnt] = np.dot(newGraph.focal, newGraph.mot[:,:,ind])
             cnt+=1
-            
+
         X[i,:] = vgg_X_from_xP_nonlin(x,P,imsize,X=None)
         # x is the [u,v,1] ,X is [X,Y,Z]
         

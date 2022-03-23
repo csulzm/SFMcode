@@ -1,19 +1,20 @@
 import numpy as np
 
 def getPose(E,K,matches,ims):
+    
     n,d = matches.shape
 
     U, s, V = np.linalg.svd(E, full_matrices=True) # Decompose the E matrix to obtain R and T matrices
-    W = np.array([[0,-1,0],[1,0,0],[0,0,1]])
-    Z = np.array([[0,1,0],[-1,0,0],[0,0,0]])
+    W = np.array([[0, -1, 0], [1 , 0, 0], [0, 0, 1]])
+    Z = np.array([[0,  1, 0] , [-1, 0, 0], [0, 0, 0]])
 
     S = np.dot(np.dot(U,Z),np.transpose(U))
 
-    R1 = np.dot(np.dot(U,W),V)
+    R1 = np.dot(np.dot(U,W), V)
     R2 = np.dot(np.dot(U, np.transpose(W)), V)
 
-    t1 = U[:,2]
-    t2 = -1*U[:,2]
+    t1 = U[:, 2]
+    t2 = -1*U[:, 2]
 
     if np.linalg.det(R1) < 0:
         print ('Negative determinant F1 times negative 1.')
@@ -29,7 +30,7 @@ def getPose(E,K,matches,ims):
     sols=[np.hstack((R1, t1t)), np.hstack((R1, t2t)), np.hstack((R2, t1t)), np.hstack((R2, t2t))]
 
     Rt = np.zeros((3,4,4))
-    Rt[:,:,0] = sols[0]
+    Rt[:, :, 0] = sols[0]
     Rt[:, :, 1] = sols[1]
     Rt[:, :, 2] = sols[2]
     Rt[:, :, 3] = sols[3]
@@ -37,9 +38,12 @@ def getPose(E,K,matches,ims):
     #Every solution
     P0 = np.dot(K,np.hstack([np.eye(3),np.zeros((3,1))]))
     goodV = np.zeros((1,4))
+    
     for i in range(4):
+        
         outX = np.zeros((n, 4))
         P1 = np.dot(K,sols[i])
+        
         #Each pair of 2D points
         for j in range(n):
             # Using VGg to calculate 3D points
@@ -50,6 +54,7 @@ def getPose(E,K,matches,ims):
             pt[:,:,1] = P1
             formatedMatched = np.reshape(matches[j,:],(2,2))
             outX[j,:] = vgg_X_from_xP_nonlin(formatedMatched,pt,imsize)
+            
         #Application scale
         outX = outX[:,0:3] / outX[:,[3,3,3]]
 
@@ -58,9 +63,10 @@ def getPose(E,K,matches,ims):
         t2 = Rt[2, 0:3, i].reshape((1,3))
         dprd = np.dot(t2,aux)
         goodV[0,i] = np.sum([np.bitwise_and(outX[:,2] > 0,dprd > 0)])
-
+    
     #Calculate which is better
     bestIndex = np.argmax(goodV)
+    
     return Rt[:,:, bestIndex]
 
 

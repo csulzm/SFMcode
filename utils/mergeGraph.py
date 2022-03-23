@@ -8,21 +8,21 @@ def mergeG(gA, gB):
     # Como ejemplo sean frames A 1 2 y B 2 3
     # los frarmes son las camaras o fotos
 
-    # Primero se calculan frames que hacen overlap
+    # First, the overlapping frames are calculated
     comFram = list(set(gA.frames).intersection(gB.frames))
 
-    # Luego las que son propias de A y las propias de B (en ej A1 B3)
+    # Then a and B (e.g. A1, B3)
     propB = list(set(gB.frames).difference(gA.frames))
     indpB = [gB.frames.index(a) for a in propB]
 
-    # Si no hay comunes retorna error
-    # Si las propias de B son ninguna tira error
+    # If there are no common return errors
+    # If the eigenvalue of B is not pulled wrong
     if len(comFram) == 0:
-        raise Exception("Comunes vacio ")
+        raise Exception("Public vacuum ")
     if len(propB) == 0:
-        raise Exception("No hay propias de B")
+        raise Exception("No own B")
 
-    # Crear grafo mezclca igual a grafo A
+    # Create a mixed graph equal to figure a
     merged = deepcopy(gA)
 
     # Para el primer overlap (pueden existir muchos)
@@ -36,7 +36,7 @@ def mergeG(gA, gB):
     transf = catRt(invertRt(gA.mot[:, :, commonA]), gB.mot[:, :, commonB])
     gB.str = transformPtsByRt(np.transpose(gB.str), transf, False)  # Aplicar a str B
 
-    # Mot ahora es la concadenacion de mot y el inverso RtB
+    # MOT is now a cascade of MOT and reverse RTB
     for i in range(len(gB.frames)):
         gB.mot[:, :, i] = catRt(gB.mot[:, :, i], invertRt(transf))
     merged.frames = list(set(gA.frames).union(set(gB.frames)))
