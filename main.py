@@ -26,7 +26,7 @@ def updateMerged(gA,gB,imsize):
     gt = triangulateGraph(gt, imsize)
     gt = bundleAdjustment(gt, False)
     gt = removeOutlierPts(gt, 10)
-    #gt = bundleAdjustment(gt)
+    gt = bundleAdjustment(gt)
     return gt
 
 if __name__ == "__main__":
@@ -125,7 +125,7 @@ if __name__ == "__main__":
         #showGraph(graphList[i],imageSize)
 
         #Bundle ajustement
-        #graphList[i]=bundleAdjustment(graphList[i])
+        graphList[i]=bundleAdjustment(graphList[i])
 
         #Visual enhancement
         print("after BA")
