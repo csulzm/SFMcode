@@ -105,8 +105,8 @@ if __name__ == "__main__":
 
 	
         F = np.array(algoMatrizFundamental(pointsA,pointsB))  #algoMatrizFundamental = implementacionRansac
-    
         Fmat = F[0]
+
         K = np.array(K)
         E = np.dot(np.transpose(K),np.dot(Fmat,K))
 
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
         #Visual enhancement
         print("after BA")
-        #showGraph(graphList[i], imageSize)
+        showGraph(graphList[i], imageSize)
 
     gM = mergeAllGraph(graphList,imageSize)
     print ('Figure merge complete')

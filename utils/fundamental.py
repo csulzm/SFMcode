@@ -10,8 +10,8 @@ def implementacionRansac(pointsA,pointsB):
     
     #The distance considered to be an outlier
     t = 0.002 
-
     F, inliers = ransacfitfundmatrix(pointsA, pointsB, t)
+    
     print ("embedded  ",len(inliers))
     print ('Total score ',len(pointsA))
     print ('Internal percentage ', len(inliers)*1.0 / len(pointsA))

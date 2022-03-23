@@ -139,7 +139,6 @@ def getPairSIFT(imageA,imageB,show=False):
 
     # If you want to scale it, remember to scale the descriptor position as well
     
-    show = True
     if show:
         img3 = drawMatches(grayA, kpA, grayB, kpB, indI, indJ)
 

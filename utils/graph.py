@@ -58,7 +58,7 @@ def createGraph(id1,id2,focal,pA,pB,Rt,f):
     n = pA.shape[0]
 
     graph.mot[:,:,0] = np.hstack([np.eye(3),np.zeros((3,1))])
-    graph.mot[:,:,1] = Rt
+    graph.mot[:,:,1] = Rt # Rt is a 3x4 matrix
     
     graph.str = np.zeros((n,3))
     graph.matches = np.hstack([pA,pB])
@@ -88,17 +88,18 @@ def triangulateGraph(graph,imagesize):
         
         #Obtain points in the camera plane and projection matrix.
         for ind in validCamera:
-            x[cnt,:] = newGraph.obsVal[int(newGraph.ObsIdx[int(i)][int(ind)]),:]
-            P[:,:,cnt] = np.dot(newGraph.focal,newGraph.mot[:,:,ind])
+            x[cnt,:] = newGraph.obsVal[int(newGraph.ObsIdx[int(i)][int(ind)]), :]
+            P[:,:,cnt] = np.dot(newGraph.focal, newGraph.mot[:,:,ind])
             cnt+=1
-
+            
         X[i,:] = vgg_X_from_xP_nonlin(x,P,imsize,X=None)
+        # x is the [u,v,1] ,X is [X,Y,Z]
         
     allscales = X[:,3].reshape((n, 1))
+
     newGraph.str = X[:,0:3] / np.hstack([allscales,allscales,allscales])
-    #the str for what?
-    
-    
+    #the str for what? ans:the point's coordinate
+
     return newGraph
 
 
@@ -120,6 +121,7 @@ def visualizeDense(listG,merged,imsize):
 def showGraph(graph,imsize,getAxis=False):
     
     from mpl_toolkits.mplot3d import Axes3D 
+    
     fig = pylab.figure()
     ax = fig.gca(projection='3d')
 
@@ -136,6 +138,7 @@ def showGraph(graph,imsize,getAxis=False):
         ax.plot(xi,yi,zi)
         xi,yi,zi = V[0, [0, 7]], V[1, [0, 7]], V[2, [0, 7]]
         ax.plot(xi,yi,zi)
+        
         ax.plot(V[0, [4, 5,6,7,4]], V[1, [4, 5,6,7,4]], V[2, [4, 5,6,7,4]])
 
     ax.scatter(graph.str[:,0], graph.str[:,1], graph.str[:,2])
@@ -147,9 +150,9 @@ def showGraph(graph,imsize,getAxis=False):
 
 def getCamera(Rt, w, h, f, scale):
     V = np.array([
-        [0, 0, 0, f, -(w * 0.5), (w * 0.5), (w * 0.5), -(w * 0.5)],
-        [0, 0, f, 0, -(h * 0.5), -(h * 0.5), (h * 0.5), (h * 0.5)],
-        [0, f, 0, 0, f, f, f, f]
+        [0, 0, 0, f, -(w * 0.5), (w * 0.5) , (w * 0.5), -(w * 0.5) ],
+        [0, 0, f, 0, -(h * 0.5), -(h * 0.5), (h * 0.5), (h * 0.5)  ],
+        [0, f, 0, 0, f         , f         , f        , f          ]
         ])
     V = scale * V
     V = transformPtsByRt(V, Rt, True)

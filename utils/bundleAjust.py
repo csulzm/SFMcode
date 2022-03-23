@@ -7,7 +7,7 @@ def bundleAdjustment(graph, adjustFocalLength=False):
     mot = np.zeros((3,2,nCamaras))
 
     for i in range(nCamaras):
-        mot[:,0,i] = rotationMatrix2angleaxis(graph.mot[:,0:3,i])
+        mot[:,0,i] = rotationMatrix2angleaxis(graph.mot[:,0:3,i]) # graph.mot[:,0:3,i] is only for R without T
         mot[:,1,i] = graph.mot[:,3,i]
 
     stre = graph.str
@@ -78,7 +78,6 @@ def rotationMatrix2angleaxis(R):
     ax[1] = R[0,2] - R[2,0]
     ax[2] = R[1,0] - R[0,1]
     ax = np.array(ax)
-
 
     costheta = max( (R[0,0] + R[1,1] + R[2,2] - 1.0) / 2.0 , -1.0)
     costheta = min(costheta, 1.0)

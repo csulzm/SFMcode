@@ -153,9 +153,9 @@ def vgg_X_from_xP_lin(u,P,imsize):
             newP[:,:,i] = np.dot(H,newP[:,:,i])
             newu[i, :] = np.dot(H[0:2,0:2], newu[i, :]) + H[0:2,2]
 
-    A= np.dot( formatVgg(np.hstack([newu[0,:],1])),  newP[:,:,0])
+    A= np.dot(formatVgg(np.hstack([newu[0,:],1])), newP[:,:,0])
     for i in range(1,K):
-        newRow = np.dot( formatVgg(np.hstack([newu[i,:],1])),  newP[:,:,i])
+        newRow = np.dot(formatVgg(np.hstack([newu[i,:],1])), newP[:,:,i])
         A = np.vstack([A, newRow  ])
 
     U, s, out = np.linalg.svd(A)
